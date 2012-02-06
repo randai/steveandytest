@@ -14,6 +14,7 @@ public class AnotherTestMain {
 			method1(i);
 		}
 		System.out.println("Hello WWWWW");
+		System.out.println("Hello xxxxxx");
 		System.out.println("Hello aaaa more aaaaa");
 		System.out.println("Hello tttttt");
 	}
@@ -26,6 +27,9 @@ public class AnotherTestMain {
 	}
 
 	static void method3(int x) {
+		System.out.println("x="+x);
+	}
+	static void method4(int x) {
 		System.out.println("x="+x);
 	}
 
