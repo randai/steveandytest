@@ -15,7 +15,7 @@ public class AnotherTestMain {
 		}
 		System.out.println("Hello WWWWW");
 		System.out.println("Hello CCCC");
-		System.out.println("Hello DDDDDD");
+		System.out.println("Hello tttttt");
 	}
 
 	static void method1(int x) {
