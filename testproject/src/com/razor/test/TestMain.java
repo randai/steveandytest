@@ -11,5 +11,9 @@ public class TestMain {
 		System.out.println("Hello World3");
 		System.out.println("Hello World4");
 	}
+	//This fixes issue 1
+	static void method4(int x) {
+		System.out.println("x="+x);
+	}
 
 }
