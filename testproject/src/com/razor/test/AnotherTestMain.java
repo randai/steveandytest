@@ -35,5 +35,8 @@ public class AnotherTestMain {
 		System.out.println("x="+x);
 		System.out.println("x="+x);
 	}
+	static void method5(int x) {
+		System.out.println("x="+x);
+	}
 
 }

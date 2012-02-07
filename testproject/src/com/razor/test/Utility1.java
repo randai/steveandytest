@@ -9,5 +9,8 @@ public class Utility1 {
 		// TODO Auto-generated method stub
 
 	}
+	static void method3(int x) {
+		System.out.println("x="+x);
+	}
 
 }
