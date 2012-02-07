@@ -10,4 +10,8 @@ public class AnotherFrame1 {
 //xxxxxxxxxxxxxxxxxxxxxxx
 	}
 
+	
+	static int methodReturningInt()	{
+		return 1;
+	}
 }

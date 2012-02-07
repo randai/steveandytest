@@ -9,5 +9,8 @@ public class Frame1 {
 		// TODO Auto-generated method stub
 //another comment
 	}
+	//another comment xxxx
+	
+	//another comment xxxx
 
 }
