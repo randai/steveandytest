@@ -31,6 +31,8 @@ public class AnotherTestMain {
 	}
 	static void method4(int x) {
 		System.out.println("x="+x);
+		System.out.println("x="+x);
+		System.out.println("x="+x);
 	}
 
 }
