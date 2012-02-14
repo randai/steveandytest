@@ -22,6 +22,7 @@ public class AnotherTestMain {
 	static void method1(int x) {
 		System.out.println("x="+x);
 		System.out.println("x="+x);
+		System.out.println("x="+x);
 	}
 	static void method2(int x) {
 		System.out.println("x="+x);

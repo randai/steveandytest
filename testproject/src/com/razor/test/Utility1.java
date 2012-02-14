@@ -14,6 +14,7 @@ public class Utility1 {
 	}
 	static void method4(int x) {
 		System.out.println("x="+x);
+		System.out.println("x="+x);
 	}
 
 }
