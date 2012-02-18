@@ -1,0 +1,10 @@
+#Wed Feb 15 14:19:20 EST 2012
+compiler.compileProtoFiles=true
+compiler.enableProjectSettings=true
+compiler.javaCodeGenerationEnabled=true
+compiler.javaOutputDirectory=src
+compiler.protocFilePath=/usr/local/bin/protoc
+compiler.useProtocInCustomPath=true
+compiler.useProtocInSystemPath=false
+eclipse.preferences.version=1
+general.enableProjectSettings=true

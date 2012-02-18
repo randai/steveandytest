@@ -1,0 +1,41 @@
+package xstream;
+option java_package = "com.razor.dto";
+option java_outer_classname = "RateProtos";
+
+
+message PBMarketDataWrapper {
+	optional int64 seq = 100;
+	optional PBMarketData marketData = 110;
+	optional int64 sent = 120;
+}
+
+message PBMarketData {
+	optional string providerID = 100;
+	optional string ratesId = 110;
+	optional string productId1 = 120;
+	optional string productId2 = 130;
+	optional string term = 140;
+	optional int64 timestamp = 150;
+	optional string settlementDate = 160;
+	optional bool lastDealt = 165;
+	repeated PBMarketRate bidRates = 170;
+	repeated PBMarketRate askRates = 180;
+}
+
+message PBMarketRate {
+	optional string rateId = 100;
+	optional string sourceId = 110;
+	optional string limit = 120;
+	optional string minLimit = 130;
+	optional string rate = 140;
+	optional string spotRate = 150;
+	optional string forwardRate = 160;
+	optional bool isCancelled = 170;
+	optional string cancellationReason = 180;
+	optional string timestamp = 190;
+	optional bool isExecutable = 200;
+	optional string marketForwardRate = 210;
+
+
+}
+
