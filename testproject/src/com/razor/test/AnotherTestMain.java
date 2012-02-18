@@ -1,43 +1,41 @@
 package com.razor.test;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+
+import com.financialogix.xstream.common.data.XStreamRates;
+
 public class AnotherTestMain {
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		System.out.println("Hello World");
-		int i = 0;
-		for (;i<10;i++){
-			System.out.println("i="+i);
-			System.out.println("Hello YYYY");
-			method1(i);
+		try
+		{
+			FileInputStream fis = new FileInputStream("/Users/andy/tmp/streamRate.obj");
+			ObjectInputStream ois = new ObjectInputStream(fis);
+			XStreamRates rates = (XStreamRates)ois.readObject();
+			ois.close();
 		}
-		System.out.println("Hello WWWWW");
-		System.out.println("Hello xxxxxx");
-		System.out.println("Hello aaaa more aaaaa");
-		System.out.println("Hello a change");
-	}
-
-	static void method1(int x) {
-		System.out.println("x="+x);
-		System.out.println("x="+x);
-		System.out.println("x="+x);
-	}
-	static void method2(int x) {
-		System.out.println("x="+x);
-	}
-
-	static void method3(int x) {
-		System.out.println("x="+x);
-	}
-	static void method4(int x) {
-		System.out.println("x="+x);
-		System.out.println("x="+x);
-		System.out.println("x="+x);
-	}
-	static void method5(int x) {
-		System.out.println("x="+x);
+		catch (FileNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (ClassNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
 	}
 
 }
