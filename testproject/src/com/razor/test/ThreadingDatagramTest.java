@@ -64,7 +64,7 @@ public class ThreadingDatagramTest
 		if ( args.length > 0 && args[0].equals("server") )
 		{
 			final int sleepInterval = 1000 / (MSGS_PER_SECOND / PORT_COUNT);
-			System.out.println("SERVER sleep interval = "+sleepInterval);
+			System.out.println("SERVER sleep interval = "+sleepInterval+ " ms");
 			
 			final XStreamRates rates = GenerateXStreamRates.generate();
 
