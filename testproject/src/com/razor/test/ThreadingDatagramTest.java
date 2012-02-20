@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Date;
@@ -24,8 +25,12 @@ import com.razor.dto.RateProtos.PBMarketDataWrapper;
 public class ThreadingDatagramTest
 {
 	public static final int PORT = 34567;
-	public static final String multicastAddr = "235.1.1.1";
+	public static final String multicastAddr = "235.0.0.1";
+	//public static final String multicastAddr = "FF01:0:0:0:0:0:0:1";
+	//public static final String multicastAddr = "ff01::1";
+	//public static final String multicastAddr = "FF01:0000:0000:0000:0000:0000:127.0.0.1";
 	static int PORT_COUNT = Integer.parseInt( System.getProperty("PORT_COUNT","5"));
+	static int TTL = Integer.parseInt( System.getProperty("TTL","0"));
 	static ExecutorService exec = Executors.newFixedThreadPool(PORT_COUNT);
 	static int MSGS_PER_SECOND = Integer.parseInt( System.getProperty("MSGS_PER_SECOND","100"));
 	/**
@@ -37,22 +42,22 @@ public class ThreadingDatagramTest
 		final AtomicBoolean keepRunning = new AtomicBoolean(true);
 		final CountDownLatch threadCountdown = new CountDownLatch(PORT_COUNT);
 		final AtomicLong totalMsgs = new AtomicLong(0);
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-		    public void run() {
-		    	System.out.println("Inside Add Shutdown Hook");
-		        keepRunning.set(false);
-		        try
-				{
-		        	threadCountdown.await();
-					System.out.println("End of Shutdown Hook : total Msgs="+totalMsgs.get());
-				}
-				catch (InterruptedException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		    }
-		});
+//		Runtime.getRuntime().addShutdownHook(new Thread() {
+//		    public void run() {
+//		    	System.out.println("Inside Add Shutdown Hook");
+//		        keepRunning.set(false);
+//		        try
+//				{
+//		        	threadCountdown.await();
+//					System.out.println("End of Shutdown Hook : total Msgs="+totalMsgs.get());
+//				}
+//				catch (InterruptedException e)
+//				{
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//		    }
+//		});
 		Date date = new Date();
 		
 		if ( args.length > 0 && args[0].equals("server") )
@@ -75,8 +80,12 @@ public class ThreadingDatagramTest
 							System.out.println("SERVER PUBLISHER on port "+port);
 							MulticastSocket ss = new MulticastSocket();
 							//ss.setBroadcast(true);
+							ss.setNetworkInterface(NetworkInterface.getByName("lo0"));
+
+							ss.joinGroup(InetAddress.getByName(multicastAddr));
 							//Stay on localhost
-							ss.setTimeToLive(0);
+							ss.setTimeToLive(TTL);
+							//System.out.println("ttl = "+ss.getTimeToLive());
 							// Dont think length matters..at send time actual will
 							// be determined..
 							byte[] b = new byte[65000];
@@ -193,16 +202,16 @@ public class ThreadingDatagramTest
 								totalTime += System.nanoTime() - before;
 								i++;
 								String s = new String(buf);
-//								System.out.println(Long.toString(System
-//										.currentTimeMillis())
-//										+ " CLIENT ON PORT " + port+" RCVD "
-//										+ rates.getStreamId()
-//										+ " "
-//										+ rates.getAllBidRates()[0].getRate()
-//												.toPlainString()
-//										+ "/"
-//										+ rates.getAllAskRates()[0].getRate()
-//												.toPlainString());
+								System.out.println(Long.toString(System
+										.currentTimeMillis())
+										+ " CLIENT ON PORT " + port+" RCVD "
+										+ rates.getStreamId()
+										+ " "
+										+ rates.getAllBidRates()[0].getRate()
+												.toPlainString()
+										+ "/"
+										+ rates.getAllAskRates()[0].getRate()
+												.toPlainString());
 							}
 							threadCountdown.countDown();
 							totalMsgs.getAndAdd(i);
