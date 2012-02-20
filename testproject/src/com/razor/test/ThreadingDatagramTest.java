@@ -89,7 +89,8 @@ public class ThreadingDatagramTest
 							DatagramPacket p = new DatagramPacket(b, b.length);
 							p.setAddress(InetAddress.getByName(multicastAddr));
 							// p.setAddress(InetAddress.getByAddress(InetAddress.getLocalHost().getAddress()));
-//							System.out.println(InetAddress.getByName(multicastAddr).getHostAddress());
+
+							//							System.out.println(InetAddress.getByName(multicastAddr).getHostAddress());
 //							System.out.println(Inet6Address.getByName(multicastAddr).getHostAddress());
 							p.setPort(port);
 
