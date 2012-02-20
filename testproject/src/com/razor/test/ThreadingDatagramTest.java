@@ -28,7 +28,6 @@ public class ThreadingDatagramTest
 	//ff01 works with no additional routing..timetolive needs to be 0 to stay on localhost so ff(01) is not really working
 	//public static final String multicastAddr = "ff01:0:0:0:0:0:2:1";
 	//unix [sudo ip route add 235.0.0.1/32 dev lo] mac [sudo route -n add 235.0.0.1/32 127.0.0.1]..adds explicit multicast address to loopback...timetolive irrelevant
-	
 	public static final String multicastAddr = "235.0.0.1";
 	static int PORT_COUNT = Integer.parseInt( System.getProperty("PORT_COUNT","5"));
 	static ExecutorService exec = Executors.newFixedThreadPool(PORT_COUNT);
@@ -59,8 +58,8 @@ public class ThreadingDatagramTest
 		        System.exit(0);
 		    }
 		});
-		Date date = new Date();
 		
+		//If im the server...
 		if ( args.length > 0 && args[0].equals("server") )
 		{
 			final int sleepInterval = 1000 / (MSGS_PER_SECOND / PORT_COUNT);
@@ -89,10 +88,6 @@ public class ThreadingDatagramTest
 							byte[] b = new byte[65000];
 							DatagramPacket p = new DatagramPacket(b, b.length);
 							p.setAddress(InetAddress.getByName(multicastAddr));
-							// p.setAddress(InetAddress.getByAddress(InetAddress.getLocalHost().getAddress()));
-
-							//							System.out.println(InetAddress.getByName(multicastAddr).getHostAddress());
-//							System.out.println(Inet6Address.getByName(multicastAddr).getHostAddress());
 							p.setPort(port);
 
 							int i = 0;
@@ -158,6 +153,7 @@ public class ThreadingDatagramTest
 				});
 			}
 		}
+		//Else if i'm the consumer
 		else
 		{
 			for ( int portOffset = 0; portOffset < PORT_COUNT; portOffset++ )
