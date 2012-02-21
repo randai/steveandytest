@@ -118,10 +118,6 @@ public class ThreadingDatagramTest
 		    }
 		});
 
-
-
-		
-		
 		//If im the server...
 		if ( args.length > 0 && args[0].equals("server") )
 		{
