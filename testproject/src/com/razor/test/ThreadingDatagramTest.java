@@ -1,9 +1,13 @@
 package com.razor.test;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Field;
@@ -42,15 +46,48 @@ public class ThreadingDatagramTest
 	static ExecutorService msgPool = Executors.newFixedThreadPool(PORT_COUNT);
 	static ExecutorService statsPool = Executors.newFixedThreadPool(PORT_COUNT);
 	static int MSGS_PER_SECOND = Integer.parseInt( System.getProperty("MSGS_PER_SECOND","100"));
+	
+	static Socket socket = null;
+	
+	final static BlockingQueue<String> queue =  new ArrayBlockingQueue<String>(1024000);
+	
+	
+	
+	static String commandLine[];
+	static int processNumber;
+	
+	Thread statsWriter;
+	
+	final AtomicBoolean keepRunning = new AtomicBoolean(true);
+	final CountDownLatch threadCountdown = new CountDownLatch(PORT_COUNT);
+
+	
 	/**
 	 * @param args
 	 */
+	
 	public static void main(String[] args) throws IOException,
 			InterruptedException
 	{
-		Socket socket = null;
+		if(args.length != 1){
+			System.out.println("Usage : [0-n] where 0 means server and n is client id starting at 1");
+			System.exit(1);
+		}
+		try
+		{
+			processNumber = Integer.parseInt(args[0]);
+		}
+		catch (NumberFormatException e)
+		{
+			System.out.println("Usage : [0-n] where 0 means server and n is client id starting at 1");
+			System.exit(1);
+		}
 		
-		final BlockingQueue<String> queue =  new ArrayBlockingQueue<String>(1024);
+		commandLine = args;
+		new ThreadingDatagramTest().testRun();
+	}
+	
+	void testRun() {
 		// See it stats server is running..
 		try {
 			//
@@ -58,37 +95,12 @@ public class ThreadingDatagramTest
 			// application
 			//
 			socket = new Socket(InetAddress.getLocalHost().getHostName(), STATS_PORT);
-	        final ObjectOutputStream oos = (socket != null ? new ObjectOutputStream(socket.getOutputStream()) : null);
+//	        final ObjectOutputStream oos = (socket != null ? new ObjectOutputStream(socket.getOutputStream()) : null);
+			BufferedWriter wr = (socket != null ? new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())): null);
 	        
         	//To consume events to send to stats server
-			new Thread(new Runnable() {
-        		public void run() {
-        			while(true){
- 
-        				try {
-							String msg = queue.take();
-							if(msg.equals("bye")) {
-								oos.writeObject(msg);
-								break;
-							}
-							if(oos != null){
-								oos.writeObject(msg);
-							}
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							break;
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							break;
-						}
-
-        			}
-        			System.out.println("Stats sending thread ended");
-        		}
-        	  }).start();
-
+	        statsWriter = new Thread(new StatsWriter(wr, queue));
+	        statsWriter.start();
 
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -96,9 +108,14 @@ public class ThreadingDatagramTest
 			e.printStackTrace();
 		}		
 		final boolean statsMode = socket != null ? true : false;
+		if(statsMode){
+			System.out.println("Connected to stats server");
+		}else{
+			System.out.println("NOT CONNECTED to stats server");
+		}
 		
-		final AtomicBoolean keepRunning = new AtomicBoolean(true);
-		final CountDownLatch threadCountdown = new CountDownLatch(PORT_COUNT);
+		
+		
 		final AtomicLong totalMsgs = new AtomicLong(0);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 		    public void run() {
@@ -107,6 +124,11 @@ public class ThreadingDatagramTest
 		        try
 				{
 		        	threadCountdown.await();
+		        	
+		        	if(statsWriter != null){
+		        		statsWriter.interrupt();
+		        	}
+		        	
 					System.out.println("End of Shutdown Hook : total Msgs="+totalMsgs.get());
 				}
 				catch (InterruptedException e)
@@ -114,21 +136,17 @@ public class ThreadingDatagramTest
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-		        System.exit(0);
 		    }
 		});
-
-		//If im the server...
-		if ( args.length > 0 && args[0].equals("server") )
+        // Send a message to the stats application
+        //
+		if(statsMode)
+        	queue.add(Integer.toString(processNumber));
+		//If im the server indicated by 0...
+		if ( processNumber == 0 )
 		{
 			final int sleepInterval = 1000 / (MSGS_PER_SECOND / PORT_COUNT);
 			System.out.println("SERVER sleep interval = "+sleepInterval+ " ms PID = "+getJavaProcessId());
-	        // Send a message to the stats application
-	        //
-	        if(statsMode)
-	        	queue.add("server");
-	        
-			
 			final XStreamRates rates = GenerateXStreamRates.generate();
 
 			for ( int portOffset = 0; portOffset < PORT_COUNT; portOffset++ )
@@ -164,7 +182,9 @@ public class ThreadingDatagramTest
 										.convert(rates, i);
 								b = pbMarketDataWrapper.toByteArray();
 								long now = System.nanoTime();
-								totalTime += now - before;
+								//Only start collecting stats on/after 10th time
+								if(i>9)
+									totalTime += now - before;
 								
 //								System.out.println(Long.toString(System
 //										.currentTimeMillis())
@@ -177,9 +197,12 @@ public class ThreadingDatagramTest
 								{
 									//Time stamp before send
 									ss.send(p);
-									//Send timestamp and message id to stats server
+									//Send timestamp and message id to stats server..0 means server
 									if(statsMode)
-										queue.add("server,"+port+","+i+","+now);
+										queue.add(processNumber+","+port+","+i+","+now);
+									if(i % 1000 == 0 && port == PORT)
+										System.out.println(new Date().toString()+ " msgCount="+i+" avgMsgPack="+((double)(totalTime/(i-10))/1000000.0)+" ms");
+
 								}
 								catch (IOException e)
 								{
@@ -190,10 +213,10 @@ public class ThreadingDatagramTest
 								Thread.sleep(sleepInterval);
 							}
 							if(statsMode)
-								queue.add("bye");
+								queue.add(processNumber+",bye");
 							threadCountdown.countDown();
 							totalMsgs.getAndAdd(i);
-							System.out.println("EXIT SERVER PUBLISHER on port "+port+" msgCount="+i+" avg="+((double)(totalTime/i)/1000000.0)+" ms");
+							System.out.println("EXIT SERVER PUBLISHER on port "+port+" msgCount="+i+" avgMsgPack="+((double)(totalTime/(i-10))/1000000.0)+" ms");
 						}
 						catch (SocketException e)
 						{
@@ -225,10 +248,9 @@ public class ThreadingDatagramTest
 				});
 			}
 		}
-		//Else if i'm the consumer
+		//Else if i'm the consumer i.e. a client
 		else
 		{
-	        queue.add("client");
 			for ( int portOffset = 0; portOffset < PORT_COUNT; portOffset++ )
 			{
 				final int port = portOffset + PORT;
@@ -244,7 +266,7 @@ public class ThreadingDatagramTest
 							System.out.println("CLIENT LISTENING ON PORT " + port+" PID = "+getJavaProcessId());
 							MulticastSocket sr = new MulticastSocket(port);
 							sr.joinGroup(InetAddress.getByName(multicastAddr));
-							byte[] buf = new byte[65000];
+							byte[] buf = new byte[2000];
 							DatagramPacket pct = new DatagramPacket(buf, buf.length);
 							int i = 1;
 							while (keepRunning.get())
@@ -270,12 +292,14 @@ public class ThreadingDatagramTest
 								mostRecentSeqNo = pbMarketDataWrapper.getSeq();
 								XStreamRates rates = RateHelper
 										.convert(pbMarketDataWrapper);
-								totalTime += System.nanoTime() - before;
+								//Only start collecting stats on/after 100th time
+								if(i>100)
+									totalTime += System.nanoTime() - before;
 								i++;
 								
 								//Send timestamp and message id to stats
 								if(statsMode)
-									queue.add("client,"+port+","+mostRecentSeqNo+","+recvd);
+									queue.add(processNumber+","+port+","+mostRecentSeqNo+","+recvd);
 								
 //								System.out.println(Long.toString(System
 //										.currentTimeMillis())
@@ -287,12 +311,15 @@ public class ThreadingDatagramTest
 //										+ "/"
 //										+ rates.getAllAskRates()[0].getRate()
 //												.toPlainString());
+								if(i % 1000 == 0 && port == PORT)
+									System.out.println(new Date().toString()+ " msgCount="+i+" avgMsgUnpack="+((double)(totalTime/(i-100))/1000000.0)+" ms");
+
 							}
 							if(statsMode)
-								queue.add("bye");
+								queue.add(processNumber+",bye");
 							threadCountdown.countDown();
 							totalMsgs.getAndAdd(i);
-							System.out.println("EXIT CLIENT on port "+port+" msgCount="+i+" avgUnpack="+((double)(totalTime/i)/1000000.0)+" ms");
+							System.out.println("EXIT CLIENT on port "+port+" msgCount="+i+" avgMsgUnpack="+((double)(totalTime/(i-100))/1000000.0)+" ms");
 
 						}
 						catch (UnknownHostException e)
@@ -337,6 +364,59 @@ public class ThreadingDatagramTest
 //				e.printStackTrace();
 //			}
 		}
+	
+	class StatsWriter implements Runnable {
+		BufferedWriter wr;
+		BlockingQueue<String> queue;
+		StatsWriter(BufferedWriter wr, BlockingQueue<String> queue){
+			this.wr = wr;
+			this.queue = queue;
+		}
+		
+		@Override
+		public void run()
+		{
+			int count = 0;
+			while(true){
+				 
+				try {
+					String msg = queue.take();
+					if(msg.contains("bye")) {
+						if(wr != null){
+							wr.write(msg+"\n");
+							wr.flush();
+						}
+						break;
+					}
+					if(wr != null){
+						wr.write(msg+"\n");
+						wr.flush();
+					}
+					if(keepRunning.get() == false){
+						if(queue.size() == 0){
+							break;
+						}
+					}
+					
+					count++;
+					if(count % 1000 == 0)
+						System.out.println("stats queue size = "+queue.size());
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					break;
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					break;
+				}
+
+			}
+			System.out.println("Stats sending thread ended");
+		}
+		
+	}
+	
 
 
 }
