@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/XStreamCommon"/>
 	<classpathentry kind="lib" path="lib/protobuf-java-2.4.1.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/FlxCommon"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/StreamWeb"/>
@@ -10,5 +9,6 @@
 	<classpathentry kind="lib" path="/XStream/logback-classic.jar"/>
 	<classpathentry kind="lib" path="/XStream/logback-core.jar" sourcepath="/home/andy/.m2/repository/ch/qos/logback/logback-core/0.9.11/logback-core-0.9.11-sources.jar"/>
 	<classpathentry kind="lib" path="lib/zmq.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/XStreamCommon"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

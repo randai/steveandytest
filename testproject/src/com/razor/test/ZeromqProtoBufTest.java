@@ -61,7 +61,7 @@ public class ZeromqProtoBufTest
 			System.exit(1);
 		}
 		// Parse the command line arguments.
-		connectTo = System.getProperty("SOCKET", "ipc://rates");
+		connectTo = System.getProperty("SOCKET", "ipc:///Users/andy/ipc/rates");
 		
 		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
