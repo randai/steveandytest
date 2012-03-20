@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 import com.financialogix.xstream.common.data.XStreamRates;
-//some change
+//some change - change 1
 public class AnotherTestMain {
 
 	/**
