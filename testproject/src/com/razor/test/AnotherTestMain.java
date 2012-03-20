@@ -12,7 +12,7 @@ import java.io.ObjectInputStream;
 import com.financialogix.xstream.common.data.XStreamRates;
 
 //some change - change 1
-//change -similar change
+//change -similar change--some 
 
 public class AnotherTestMain {
 
