@@ -15,7 +15,7 @@ import com.financialogix.xstream.common.data.XStreamRates;
 
 //change -similar change--some 
 
-//change -similar change -mre
+//change -similar change -mre xxxxx
 
 
 public class AnotherTestMain {
