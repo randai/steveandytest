@@ -1,5 +1,5 @@
 package com.razor.test;
-//Comment 1
+//Comment 1 - make a conflict
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
